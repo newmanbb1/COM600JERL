@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Agenda (MySQL)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 20px;
+      color: #333;
+    }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 500px;
+    }
+
+    input, button {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4cafef;
+      box-shadow: 0 0 5px #4cafef66;
+    }
+
+    button {
+      grid-column: span 2;
+      background: #4cafef;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #3a9dd6;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 20px;
+      width: 600px;
+    }
+
+    li {
+      background: #fff;
+      margin: 8px 0;
+      padding: 12px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .acciones button {
+      margin-left: 5px;
+      background: #ff5c5c;
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .acciones button.edit {
+      background: #4caf50;
+    }
+
+    .acciones button:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <h1>Agenda 📒</h1>
+  <form id="form">
+    <input name="nombres" placeholder="Nombres" required>
+    <input name="apellidos" placeholder="Apellidos" required>
+    <input type="date" name="fecha_nacimiento">
+    <input name="direccion" placeholder="Dirección">
+    <input name="celular" placeholder="Celular">
+    <input name="correo" placeholder="Correo">
+    <button>Agregar</button>
+  </form>
+
+  <ul id="lista"></ul>
+
+  <script>
+    const API = "http://localhost:4000/agenda";
+
+    async function cargar() {
+      const res = await fetch(API);
+      const data = await res.json();
+      document.getElementById("lista").innerHTML = data.map(p => 
+        `<li>
+          <div class="info">
+            <strong>${p.nombres} ${p.apellidos}</strong>
+            <small>${p.correo}</small>
+            <small>📱 ${p.celular || '---'}</small>
+          </div>
+          <div class="acciones">
+            <button class="edit" onclick="editar(${p.id}, '${p.nombres}', '${p.apellidos}', '${p.fecha_nacimiento}', '${p.direccion}', '${p.celular}', '${p.correo}')">✏️</button>
+            <button onclick="eliminar(${p.id})">🗑️</button>
+          </div>
+        </li>`
+      ).join("");
+    }
+
+    document.getElementById("form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(form)),
+      });
+      e.target.reset();
+      cargar();
+    });
+
+    async function eliminar(id) {
+      if (confirm("¿Seguro que quieres eliminar este contacto?")) {
+        await fetch(API + "/" + id, { method: "DELETE" });
+        cargar();
+      }
+    }
+
+    function editar(id, nombres, apellidos, fecha, direccion, celular, correo) {
+      document.querySelector("[name=nombres]").value = nombres;
+      document.querySelector("[name=apellidos]").value = apellidos;
+      document.querySelector("[name=fecha_nacimiento]").value = fecha ? fecha.split("T")[0] : "";
+      document.querySelector("[name=direccion]").value = direccion;
+      document.querySelector("[name=celular]").value = celular;
+      document.querySelector("[name=correo]").value = correo;
+
+      document.querySelector("button").textContent = "Actualizar";
+
+      document.getElementById("form").onsubmit = async (e) => {
+        e.preventDefault();
+        const form = new FormData(e.target);
+        await fetch(API + "/" + id, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(Object.fromEntries(form)),
+        });
+        e.target.reset();
+        document.querySelector("button").textContent = "Agregar";
+        document.getElementById("form").onsubmit = null;
+        cargar();
+      };
+    }
+
+    cargar();
+  </script>
+</body>
+</html>

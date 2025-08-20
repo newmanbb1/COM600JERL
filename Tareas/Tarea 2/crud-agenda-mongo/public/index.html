@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Agenda Con Mongo</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-6 text-blue-700">📒 Agenda Personal</h1>
+
+    <div class="bg-white p-6 rounded-2xl shadow-lg mb-6 max-w-lg mx-auto">
+      <form id="agendaForm" class="space-y-4">
+        <input type="text" id="nombres" placeholder="Nombres" class="w-full px-4 py-2 border rounded-lg">
+        <input type="text" id="apellidos" placeholder="Apellidos" class="w-full px-4 py-2 border rounded-lg">
+        <input type="date" id="fecha_nacimiento" class="w-full px-4 py-2 border rounded-lg">
+        <input type="text" id="direccion" placeholder="Dirección" class="w-full px-4 py-2 border rounded-lg">
+        <input type="text" id="celular" placeholder="Celular" class="w-full px-4 py-2 border rounded-lg">
+        <input type="email" id="correo" placeholder="Correo electrónico" class="w-full px-4 py-2 border rounded-lg">
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">➕ Agregar</button>
+      </form>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-lg max-w-3xl mx-auto">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">📋 Lista de contactos</h2>
+      <table class="min-w-full table-auto border-collapse">
+        <thead>
+          <tr class="bg-blue-600 text-white">
+            <th class="py-2 px-4 border">Nombres</th>
+            <th class="py-2 px-4 border">Apellidos</th>
+            <th class="py-2 px-4 border">Celular</th>
+            <th class="py-2 px-4 border">Correo</th>
+            <th class="py-2 px-4 border">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="agendaList" class="text-center"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("agendaForm");
+    const agendaList = document.getElementById("agendaList");
+
+    async function cargarAgenda() {
+      const res = await fetch("/api/agenda");
+      const data = await res.json();
+      agendaList.innerHTML = "";
+      data.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="py-2 px-4 border">${item.nombres}</td>
+          <td class="py-2 px-4 border">${item.apellidos}</td>
+          <td class="py-2 px-4 border">${item.celular}</td>
+          <td class="py-2 px-4 border">${item.correo}</td>
+          <td class="py-2 px-4 border">
+            <button onclick="eliminar('${item._id}')" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">🗑</button>
+          </td>
+        `;
+        agendaList.appendChild(row);
+      });
+    }
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const nuevo = {
+        nombres: document.getElementById("nombres").value,
+        apellidos: document.getElementById("apellidos").value,
+        fecha_nacimiento: document.getElementById("fecha_nacimiento").value,
+        direccion: document.getElementById("direccion").value,
+        celular: document.getElementById("celular").value,
+        correo: document.getElementById("correo").value
+      };
+      await fetch("/api/agenda", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nuevo)
+      });
+      form.reset();
+      cargarAgenda();
+    });
+
+    async function eliminar(id) {
+      await fetch(`/api/agenda/${id}`, { method: "DELETE" });
+      cargarAgenda();
+    }
+
+    cargarAgenda();
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<div class="container">
+  <h2>Próximos Eventos</h2>
+
+  <div *ngIf="isLoading" class="loading">Cargando eventos...</div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <div *ngIf="!isLoading && !error" class="event-grid">
+
+    <div *ngFor="let evento of eventos" class="event-card">
+      <div class="card-content">
+        <h3>{{ evento.nombre }}</h3>
+        <p><strong>Fecha:</strong> {{ evento.fecha | date: 'dd/MM/yyyy HH:mm' }}</p>
+        <p><strong>Lugar:</strong> {{ evento.lugar }}</p>
+        <p><strong>Disponibles:</strong> {{ evento.entradas_disponibles }}</p>
+        <p class="price">{{ evento.precio | currency:'USD' }}</p>
+      </div>
+      <div class="card-actions">
+        <button (click)="comprar(evento)">Comprar</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-purchase-modal
+  *ngIf="isModalOpen"
+  [event]="selectedEvent"
+  (close)="closeModal()"
+></app-purchase-modal>

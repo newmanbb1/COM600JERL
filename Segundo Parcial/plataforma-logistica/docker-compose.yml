@@ -1,0 +1,115 @@
+version: '3.8'
+
+services:
+
+  # 1. El Proxy Inverso (Nginx)
+  proxy-nginx:
+    build: ./nginx # Construye desde la carpeta nginx/
+    container_name: proxy-nginx
+    ports:
+      - "80:80" # Expone el puerto 80 al mundo exterior
+    depends_on:
+      - servicio-auth
+      - servicio-vehiculos
+      - servicio-envios
+    networks:
+      - logistica-net
+
+  # 2. Microservicio de Autenticación (Node.js)
+  servicio-auth:
+    build: ./servicio-auth
+    container_name: servicio-auth
+    environment:
+      # Pasamos las variables de entorno del .env
+      - PORT=3001
+      - DB_HOST=db-auth # El nombre del servicio de la BD
+      - DB_USER=root
+      - DB_PASSWORD=mi-password-secreto
+      - DB_NAME=auth_db
+      - JWT_SECRET=ESTA-ES-UNA-CLAVE-SECRETA-MUY-LARGA-Y-COMPLICADA-12345
+    networks:
+      - logistica-net
+    depends_on:
+      - db-auth # Debe esperar a que la BD esté lista
+
+  # 3. Microservicio de Vehículos (Python/FastAPI)
+  servicio-vehiculos:
+    build: ./servicio-vehiculos
+    container_name: servicio-vehiculos
+    environment:
+      - MONGO_URL=mongodb://db-vehiculos:27017
+      - DB_NAME=vehiculos_db
+      - JWT_SECRET=ESTA-ES-UNA-CLAVE-SECRETA-MUY-LARGA-Y-COMPLICADA-12345
+    networks:
+      - logistica-net
+    depends_on:
+      - db-vehiculos
+
+  # 4. Microservicio de Envíos (Go/GraphQL)
+  servicio-envios:
+    build: ./servicio-envios
+    container_name: servicio-envios
+    environment:
+      - PORT=3003
+      - DB_HOST=db-envios
+      - DB_USER=root
+      - DB_PASSWORD=mi-password-secreto
+      - DB_NAME=envios_db
+      # Importante: El host del servicio gRPC
+      - GRPC_HOST=servicio-vehiculos
+    networks:
+      - logistica-net
+    depends_on:
+      - db-envios
+      - servicio-vehiculos # Debe esperar a que el servicio de vehículos esté disponible
+
+  # --- Bases de Datos ---
+
+  # 5. Base de Datos para Auth (MySQL)
+  db-auth:
+    image: mysql:8.0
+    container_name: db-auth
+    environment:
+      - MYSQL_ROOT_PASSWORD=mi-password-secreto
+      - MYSQL_DATABASE=auth_db
+    ports:
+      - "3306:3306" # Exponemos para conectar con un cliente (ej. DBeaver)
+    volumes:
+      - auth-db-data:/var/lib/mysql
+    networks:
+      - logistica-net
+
+  # 6. Base de Datos para Envíos (MySQL)
+  db-envios:
+    image: mysql:8.0
+    container_name: db-envios
+    environment:
+      - MYSQL_ROOT_PASSWORD=mi-password-secreto
+      - MYSQL_DATABASE=envios_db
+    ports:
+      - "3307:3306" # Mapeamos al 3307 en el host para evitar colisión
+    volumes:
+      - envios-db-data:/var/lib/mysql
+    networks:
+      - logistica-net
+
+  # 7. Base de Datos para Vehículos (MongoDB)
+  db-vehiculos:
+    image: mongo:latest
+    container_name: db-vehiculos
+    ports:
+      - "27017:27017" # Exponemos para conectar con un cliente (ej. Compass)
+    volumes:
+      - vehiculos-db-data:/data/db
+    networks:
+      - logistica-net
+
+# --- Volúmenes y Redes ---
+volumes:
+  auth-db-data:
+  envios-db-data:
+  vehiculos-db-data:
+
+networks:
+  logistica-net:
+    driver: bridge

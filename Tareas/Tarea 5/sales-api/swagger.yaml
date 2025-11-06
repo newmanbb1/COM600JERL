@@ -1,0 +1,128 @@
+openapi: 3.0.0
+info:
+  title: Sales API
+  description: API for managing sales, clients, invoices, and products.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+paths:
+  /clients:
+    get:
+      summary: Get all clients
+      responses:
+        '200':
+          description: A list of clients
+    post:
+      summary: Create a new client
+      responses:
+        '201':
+          description: Client created
+  /clients/{id}:
+    get:
+      summary: Get a client by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the client to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Client details
+        '404':
+          description: Client not found
+    delete:
+      summary: Delete a client by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the client to delete
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Client deleted
+        '404':
+          description: Client not found
+  /invoices:
+    get:
+      summary: Get all invoices
+      responses:
+        '200':
+          description: A list of invoices
+    post:
+      summary: Create a new invoice
+      responses:
+        '201':
+          description: Invoice created
+  /invoices/{id}:
+    get:
+      summary: Get an invoice by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the invoice to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice details
+        '404':
+          description: Invoice not found
+    delete:
+      summary: Delete an invoice by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the invoice to delete
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Invoice deleted
+        '404':
+          description: Invoice not found
+  /products:
+    get:
+      summary: Get all products
+      responses:
+        '200':
+          description: A list of products
+    post:
+      summary: Create a new product
+      responses:
+        '201':
+          description: Product created
+  /products/{id}:
+    get:
+      summary: Get a product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the product to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product details
+        '404':
+          description: Product not found
+    delete:
+      summary: Delete a product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the product to delete
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Product deleted
+        '404':
+          description: Product not found

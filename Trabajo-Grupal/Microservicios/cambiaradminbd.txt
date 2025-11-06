@@ -1,0 +1,14 @@
+Conéctate al contenedor de la base de datos con este comando:
+docker exec -it db-usuarios mysql -u root -p
+
+-- Seleccionar la base de datos
+USE usuarios_db;
+
+-- Actualizar el rol del usuario
+UPDATE users SET role = 'admin' WHERE email = 'admin@tuempresa.com';
+
+-- Verificar el cambio (opcional)
+SELECT email, role FROM users;
+
+-- Salir de la consola de MySQL
+exit;

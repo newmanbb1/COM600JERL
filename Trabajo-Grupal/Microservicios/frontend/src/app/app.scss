@@ -1,0 +1,63 @@
+header {
+  background-color: #ffffff; /* Fondo blanco */
+  color: #333;
+  padding: 0 40px; /* Menos altura, más padding lateral */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Sombra más sutil */
+  position: sticky; /* Fija la barra arriba */
+  top: 0;
+  z-index: 100;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1300px;
+  margin: 0 auto;
+  height: 70px; /* Altura fija */
+}
+
+nav h1 {
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+nav h1 a {
+  color: #3f51b5; /* Título con el color principal */
+  text-decoration: none;
+}
+
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Espacio entre elementos */
+}
+
+nav ul a {
+  color: #555; /* Color de texto más suave */
+  text-decoration: none;
+  font-weight: 500;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+nav ul a:hover {
+  background-color: #f4f7f6; /* Un fondo gris claro al pasar el mouse */
+  color: #3f51b5;
+}
+
+/* Estilo especial para el botón de "Cerrar Sesión" */
+nav ul a[href="#"] {
+  background-color: #fdecec;
+  color: #d9534f;
+  font-weight: 700;
+}
+
+nav ul a[href="#"]:hover {
+  background-color: #f8d7da;
+}

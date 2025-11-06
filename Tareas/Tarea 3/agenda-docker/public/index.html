@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Agenda Node + MongoDB</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="max-w-5xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-blue-700 mb-6">📒 Agenda</h1>
+
+    <!-- FORM -->
+    <form id="form" class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white p-4 rounded-xl shadow">
+      <input type="hidden" id="id">
+      <input id="nombres" placeholder="Nombres" class="border rounded p-2" required>
+      <input id="apellidos" placeholder="Apellidos" class="border rounded p-2" required>
+      <input id="fecha_nacimiento" type="date" class="border rounded p-2">
+      <input id="direccion" placeholder="Dirección" class="border rounded p-2 md:col-span-2">
+      <input id="celular" placeholder="Celular" class="border rounded p-2">
+      <input id="correo" placeholder="Correo" type="email" class="border rounded p-2">
+      <button class="md:col-span-3 bg-blue-600 text-white rounded p-2 hover:bg-blue-700 transition">Guardar</button>
+    </form>
+
+    <!-- LIST -->
+    <div class="mt-6 bg-white rounded-xl shadow overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="bg-blue-600 text-white">
+          <tr>
+            <th class="px-3 py-2 text-left">Nombres</th>
+            <th class="px-3 py-2 text-left">Apellidos</th>
+            <th class="px-3 py-2">Celular</th>
+            <th class="px-3 py-2">Correo</th>
+            <th class="px-3 py-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const API = "/api/agenda";
+    const $ = (id) => document.getElementById(id);
+    const form = $("form");
+    const tbody = $("tbody");
+    const idField = $("id");
+
+    async function cargar() {
+      const res = await fetch(API);
+      const data = await res.json();
+      tbody.innerHTML = data.map(p => `
+        <tr class="border-b">
+          <td class="px-3 py-2">${p.nombres}</td>
+          <td class="px-3 py-2">${p.apellidos}</td>
+          <td class="px-3 py-2 text-center">${p.celular || ""}</td>
+          <td class="px-3 py-2 text-center">${p.correo || ""}</td>
+          <td class="px-3 py-2 text-center">
+            <button class="px-2 py-1 rounded bg-yellow-400 hover:bg-yellow-500 mr-1" onclick='editar(${JSON.stringify(p)})'>✏️</button>
+            <button class="px-2 py-1 rounded bg-red-500 text-white hover:bg-red-600" onclick="eliminar('${p._id}')">🗑️</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const payload = {
+        nombres: $("nombres").value,
+        apellidos: $("apellidos").value,
+        fecha_nacimiento: $("fecha_nacimiento").value || null,
+        direccion: $("direccion").value,
+        celular: $("celular").value,
+        correo: $("correo").value
+      };
+
+      if (idField.value) {
+        await fetch(`${API}/${idField.value}`, {
+          method: "PUT",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(payload)
+        });
+      } else {
+        await fetch(API, {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(payload)
+        });
+      }
+
+      form.reset(); idField.value = "";
+      cargar();
+    });
+
+    function editar(p) {
+      idField.value = p._id;
+      $("nombres").value = p.nombres || "";
+      $("apellidos").value = p.apellidos || "";
+      $("fecha_nacimiento").value = p.fecha_nacimiento ? p.fecha_nacimiento.substring(0,10) : "";
+      $("direccion").value = p.direccion || "";
+      $("celular").value = p.celular || "";
+      $("correo").value = p.correo || "";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function eliminar(id) {
+      if (!confirm("¿Eliminar este contacto?")) return;
+      await fetch(`${API}/${id}`, { method: "DELETE" });
+      cargar();
+    }
+
+    cargar();
+  </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Tareas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Mi Lista de Tareas</h1>
+
+        <div class="form-container">
+            <h2>Añadir Nueva Tarea</h2>
+            <form id="task-form">
+                <input type="text" id="title" placeholder="Título de la tarea" required>
+                <textarea id="description" placeholder="Descripción" required></textarea>
+                <button type="submit">Añadir Tarea</button>
+            </form>
+        </div>
+
+        <div class="tasks-container">
+            <h2>Tareas Pendientes</h2>
+            <ul id="task-list">
+                </ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

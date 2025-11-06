@@ -1,0 +1,94 @@
+# docker-compose.yml CORREGIDO Y UNIFICADO
+services:
+  db-usuarios:
+    image: mysql:8.0
+    container_name: db-usuarios
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: usuarios_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_usuarios_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+  db-compras:
+      image: mongo:latest
+      container_name: db-compras
+      restart: always
+      ports:
+        - "27017:27017"
+      volumes:
+        - db_compras_data:/data/db
+  servicio-usuarios:
+    build: ./Usuarios_jwt
+    container_name: servicio-usuarios
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: db-usuarios
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_NAME: usuarios_db
+      DB_PORT: 3306
+      # --- LÍNEA AÑADIDA: La clave secreta para firmar tokens ---
+      JWT_SECRET: EstaEsMiClaveSuperSeguraParaJWT123
+    depends_on:
+      - db-usuarios
+
+  servicio-eventos:
+    build: ./Microservicios Seguridad
+    container_name: servicio-eventos
+    restart: always
+    ports:
+      - "5002:5002"
+    environment:
+      # --- LÍNEA EXISTENTE: La misma clave para verificar tokens ---
+      SECRET_KEY: EstaEsMiClaveSuperSeguraParaJWT123
+
+  # ... (el resto del archivo es exactamente igual) ...
+  servicio-compras:
+    build: ./compras
+    container_name: servicio-compras
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      EVENTOS_SERVICE_URL: http://servicio-eventos:5002
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_DATA_MONGODB_URI: mongodb://db-compras:27017/compras_db # Conexión a su DB
+      JWT_SECRET: EstaEsMiClaveSuperSeguraParaJWT123
+    depends_on:
+      - servicio-eventos
+      - rabbitmq
+      - servicio-usuarios
+      - db-compras # Depende de su nueva DB
+
+  servicio-notificaciones:
+    build: ./servicio-notificaciones-go
+    container_name: servicio-notificaciones
+    restart: always
+    ports:
+      - "3004:3004"
+    environment:
+      - RABBITMQ_HOST=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: "rabbitmq:3.9-management"
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+
+volumes:
+  rabbitmq_data:
+  db_usuarios_data:
+  db_compras_data:

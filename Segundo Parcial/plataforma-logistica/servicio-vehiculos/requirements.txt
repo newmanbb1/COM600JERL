@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+motor
+pydantic
+python-jose[cryptography]
+python-dotenv
+grpcio
+grpcio-tools
+pymongo

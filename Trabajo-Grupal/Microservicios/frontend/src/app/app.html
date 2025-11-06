@@ -1,0 +1,24 @@
+<header>
+  <nav>
+    <h1><a routerLink="/eventos">Venta de Entradas</a></h1>
+    <ul>
+      <li><a routerLink="/eventos">Eventos</a></li>
+
+      <ng-container *ngIf="!authService.isLoggedIn()">
+        <li><a routerLink="/login">Login</a></li>
+        <li><a routerLink="/register">Registro</a></li>
+      </ng-container>
+
+      <ng-container *ngIf="authService.isLoggedIn()">
+        <li *ngIf="authService.getUserRole() === 'admin'">
+          <a routerLink="/crear-evento">Crear Evento</a>
+        </li>
+        <li><a href="#" (click)="logout()">Cerrar Sesión</a></li>
+      </ng-container>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <router-outlet></router-outlet>
+</main>

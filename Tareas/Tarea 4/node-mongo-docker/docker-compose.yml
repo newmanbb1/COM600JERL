@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # Servicio de la aplicación Node.js
+  app:
+    build: ./app  # Construye la imagen a partir del Dockerfile en la carpeta ./app
+    image: newmanbb/practica-3-inciso-3:latest # <-- AÑADE ESTA LÍNEA
+
+    container_name: node-app
+    ports:
+      - "3000:3000"  # Mapea el puerto 3000 del host al 3000 del contenedor
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - mongodb  # Indica que este servicio depende del servicio mongodb
+
+  # Servicio de la base de datos MongoDB
+  mongodb:
+    image: mongo:latest  # Usa la imagen oficial más reciente de MongoDB
+    container_name: mongodb
+    ports:
+      - "27017:27017" # Mapea el puerto 27017 del host para poder conectarnos desde fuera (opcional, útil para debugging)
+    volumes:
+      - mongo-data:/data/db # Persiste los datos de la BD en un volumen llamado mongo-data
+
+volumes:
+  mongo-data: # Define el volumen para la persistencia de datos
